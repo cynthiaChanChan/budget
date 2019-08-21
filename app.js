@@ -39,7 +39,7 @@ var budgetController = (function() {
 
             if (obj.type === "inc") {
                 newItem = new Income(obj);
-            } else {
+            } else if (obj.type === "exp"){
                 newItem = new Expense(obj);
             }
             itemsArr.push(newItem);
@@ -57,7 +57,9 @@ var UIController = (function() {
         inputType: ".add__type",
         inputDescription: ".add__description",
         inputValue: ".add__value",
-        inputBtn: ".add__btn"
+        inputBtn: ".add__btn",
+        incomeContainer: ".income__list",
+        expenseContainer: ".expenses__list"
     };
 
     return {
@@ -70,6 +72,29 @@ var UIController = (function() {
         },
         getDOMstrings: function() {
             return DOMstrings;
+        },
+        addListItem: function(obj, type) {
+            var element, typeName;
+
+            typeName = type === "inc" ? 'income' : 'expense';
+            
+            //item htmlString
+            var html = '<div class="item clearfix" id="' + typeName + '-' + obj.id + '">';
+            html += '<div class="item__description">' + obj.description + '</div>';
+            html += '<div class="right clearfix"><div class="item__value">';
+            if (type === "inc") {
+                element = DOMstrings.incomeContainer;
+                html += '+ ' + obj.value + '</div>';
+            } else if (type === "exp") {
+                element = DOMstrings.expenseContainer;
+                html += '- ' + obj.value + '</div>';
+                html += '<div class="item__percentage">21%</div>';
+            }
+            html += '<div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button>';
+            html += '</div></div></div>';
+
+            //insert into dom
+            document.querySelector(element).insertAdjacentHTML("beforeend", html);
         }
     }
 })();
@@ -77,14 +102,14 @@ var UIController = (function() {
 var controller = (function(budgetCtrl, UICtrl) {
 
     function ctrlAddItem() {
-        
+        var input, newItem;
         // 1. Get the field input data
-        var input = UICtrl.getInput();
+        input = UICtrl.getInput();
 
         // 2. Add the item to the budget controller
-        var newItem = budgetController.addItem(input);
+        newItem = budgetCtrl.addItem(input);
         // 3. Add the item to the UI
-
+        UICtrl.addListItem(newItem, input.type);
         // 4. Calculate the budget
 
         // 5. Display the budget on the UI
