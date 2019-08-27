@@ -66,20 +66,20 @@ var UIController = (function() {
         getInput: function() {
             return {
                 type: document.querySelector(DOMstrings.inputType).value,
-                description: document.querySelector(DOMstrings.inputDescription).value,
-                value: document.querySelector(DOMstrings.inputValue).value
+                description: document.querySelector(DOMstrings.inputDescription).value.trim(),
+                value: parseFloat(document.querySelector(DOMstrings.inputValue).value)
             }
         },
         getDOMstrings: function() {
             return DOMstrings;
         },
         addListItem: function(obj, type) {
-            var element, typeName;
+            var html, element, typeName;
 
             typeName = type === "inc" ? 'income' : 'expense';
             
             //item htmlString
-            var html = '<div class="item clearfix" id="' + typeName + '-' + obj.id + '">';
+            html = '<div class="item clearfix" id="' + typeName + '-' + obj.id + '">';
             html += '<div class="item__description">' + obj.description + '</div>';
             html += '<div class="right clearfix"><div class="item__value">';
             if (type === "inc") {
@@ -95,24 +95,49 @@ var UIController = (function() {
 
             //insert into dom
             document.querySelector(element).insertAdjacentHTML("beforeend", html);
+        },
+        clearFields: function() {
+            var fields;
+
+            fields = document.querySelectorAll(DOMstrings.inputDescription + ", " + DOMstrings.inputValue);
+            //NodeList is not an Array, it is possible to iterate over it with forEach(), 
+            //so no need to convert to array using slice;
+            // fieldsArr = Array.prototype.slice.call(fields); 
+            fields.forEach(function(current) {
+                current.value = "";
+            });
+            fields[0].focus();
         }
     }
 })();
 
 var controller = (function(budgetCtrl, UICtrl) {
 
+    function updateBudget() {
+        // 1. Calculate the budget
+
+        // 2. Return the budget
+
+        // 3. Display the budget on the UI
+
+    }
+
     function ctrlAddItem() {
         var input, newItem;
         // 1. Get the field input data
         input = UICtrl.getInput();
 
+        if (input.description == "" || input.value <= 0 || isNaN(input.value)) {
+            return;
+        }
         // 2. Add the item to the budget controller
         newItem = budgetCtrl.addItem(input);
         // 3. Add the item to the UI
         UICtrl.addListItem(newItem, input.type);
-        // 4. Calculate the budget
-
-        // 5. Display the budget on the UI
+        UICtrl.clearFields();
+        // 4. Calculate and update budget
+        updateBudget();
+       
     }
 
     function setupEventListeners() {
