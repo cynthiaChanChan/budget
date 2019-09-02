@@ -56,6 +56,24 @@ var budgetController = (function() {
 
             return newItem;
         },
+        removeItem: function(arr) {
+            var type, itemsArr;
+
+            type = arr[0];
+            if (type === "income") {
+                type = "inc";
+            } else if (type === "expense") {
+                type = "exp";
+            }
+
+            itemsArr = data.allItems[type];
+
+            data.allItems[type] = itemsArr.filter(function(item) {
+                return item.id != arr[1];
+            });
+
+            console.log(data.allItems)
+        },
         calculateBudget: function() {
             // calculate total income and expenses
             calculateTotal('inc');
@@ -96,7 +114,8 @@ var UIController = (function() {
         budgetLabel: ".budget__value",
         incomeLable: ".budget__income--value",
         expensesLabel: ".budget__expenses--value",
-        percentageLabel: ".budget__expenses--percentage"
+        percentageLabel: ".budget__expenses--percentage",
+        container: ".container"
     };
 
     return {
@@ -132,6 +151,9 @@ var UIController = (function() {
 
             //insert into dom
             document.querySelector(element).insertAdjacentHTML("beforeend", html);
+        },
+        deleteListItem: function(elem) {
+            elem.parentNode.removeChild(elem);
         },
         clearFields: function() {
             var fields;
@@ -185,6 +207,24 @@ var controller = (function(budgetCtrl, UICtrl) {
        
     }
 
+    function ctrlDeleteItem(event) {
+        var target, element, typeAndId;
+        // 1. get the deleted item
+        target = event.target;
+        element = target.parentNode.parentNode.parentNode.parentNode;
+        typeAndId = target.parentNode.parentNode.parentNode.parentNode.id.split("-");
+        console.log(typeAndId);
+
+        // 2. remove item from budget controller
+        budgetCtrl.removeItem(typeAndId);
+
+        // 3. delete item from the UI
+        UICtrl.deleteListItem(element);
+
+        // 4. Calculate and update budget
+        updateBudget();
+    }
+
     function setupEventListeners() {
         var DOMstrings = UICtrl.getDOMstrings();
         document.querySelector(DOMstrings.inputBtn).addEventListener("click", ctrlAddItem);
@@ -196,6 +236,8 @@ var controller = (function(budgetCtrl, UICtrl) {
             
         });
 
+        //delete income of expense event
+        document.querySelector(DOMstrings.container).addEventListener('click', ctrlDeleteItem);
     };
 
     return {
