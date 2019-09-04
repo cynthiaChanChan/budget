@@ -84,7 +84,7 @@ var budgetController = (function() {
             calculateTotal('exp');
 
             // calculate the budget: income - expenses
-            data.budget = data.totals.inc - data.totals.exp
+            data.budget = data.totals.inc - data.totals.exp;
 
             // calculate the percentage of income that we spent
             if (data.totals.inc > 0) {
@@ -145,10 +145,10 @@ var UIController = (function() {
             html += '<div class="right clearfix"><div class="item__value">';
             if (type === "inc") {
                 element = DOMstrings.incomeContainer;
-                html += '+ ' + obj.value + '</div>';
+                html += '+ ' + this.formatNumber(obj.value) + '</div>';
             } else if (type === "exp") {
                 element = DOMstrings.expenseContainer;
-                html += '- ' + obj.value + '</div>';
+                html += '- ' + this.formatNumber(obj.value) + '</div>';
                 html += '<div class="item__percentage">' + obj.percentage + '</div>';
             }
             html += '<div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button>';
@@ -173,10 +173,27 @@ var UIController = (function() {
             fields[0].focus();
         },
         displayBudget: function(obj) {
-            document.querySelector(DOMstrings.budgetLabel).textContent = obj.budget > 0 ? "+" + obj.budget : obj.budget;
-            document.querySelector(DOMstrings.incomeLable).textContent = obj.totalInc > 0 ? '+' + obj.totalInc : obj.totalInc;
-            document.querySelector(DOMstrings.expensesLabel).textContent = obj.totalExp > 0 ? '-' + obj.totalExp : obj.totalExp; 
+            var budget = this.formatNumber(obj.budget);
+            var totalInc = this.formatNumber(obj.totalInc);
+            var totalExp = this.formatNumber(obj.totalExp);
+
+            document.querySelector(DOMstrings.budgetLabel).textContent = obj.budget > 0 ? "+" + budget : budget;
+            document.querySelector(DOMstrings.incomeLable).textContent = obj.totalInc > 0 ? '+' + totalInc : totalInc;
+            document.querySelector(DOMstrings.expensesLabel).textContent = obj.totalExp > 0 ? '-' + totalExp : totalExp; 
             document.querySelector(DOMstrings.percentageLabel).textContent = obj.percentage > 0 ? obj.percentage + '%' : '---';
+        },
+        // formatNumber(111111111.111) return '111,111,111.11'
+        formatNumber: function(num) {
+            num = num.toFixed(2);
+            var numSplit = num.split('.');
+            var strint = numSplit[0];
+            var intLen = strint.length;
+            var intArray = strint.split(""); // or Array.prototype.slice.call(strint)
+            for(var i = intLen - 3; i > 0; i-=3) {                
+                intArray.splice(i, 0, ',');
+            }
+            strint = intArray.join("");
+            return strint + '.' + numSplit[1];
         }
     }
 })();
