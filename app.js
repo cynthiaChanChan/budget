@@ -184,13 +184,14 @@ var UIController = (function() {
             var totalInc = this.formatNumber(obj.totalInc);
             var totalExp = this.formatNumber(obj.totalExp);
 
-            document.querySelector(DOMstrings.budgetLabel).textContent = obj.budget > 0 ? "+" + budget : budget;
+            document.querySelector(DOMstrings.budgetLabel).textContent = obj.budget > 0 ? "+" + budget : "-" + budget;
             document.querySelector(DOMstrings.incomeLable).textContent = obj.totalInc > 0 ? '+' + totalInc : totalInc;
             document.querySelector(DOMstrings.expensesLabel).textContent = obj.totalExp > 0 ? '-' + totalExp : totalExp; 
             document.querySelector(DOMstrings.percentageLabel).textContent = obj.percentage > 0 ? obj.percentage + '%' : '---';
         },
         // formatNumber(111111111.111) return '111,111,111.11'
         formatNumber: function(num) {
+            num = Math.abs(num);
             num = num.toFixed(2);
             var numSplit = num.split('.');
             var strint = numSplit[0];
