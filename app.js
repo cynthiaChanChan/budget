@@ -103,6 +103,12 @@ var budgetController = (function() {
                 budget: data.budget,
                 percentage: data.percentage
             }
+        },
+        getAllItems: function() {
+            return data.allItems;
+        },
+        setAllItems: function(arr) {
+            data.allItems = arr;
         }
     }
 })();
@@ -120,7 +126,8 @@ var UIController = (function() {
         expensesLabel: ".budget__expenses--value",
         percentageLabel: ".budget__expenses--percentage",
         container: ".container",
-        percentageItem: ".item__percentage"
+        percentageItem: ".item__percentage",
+        dateLabel: ".budget__title--month"
     };
 
     return {
@@ -194,13 +201,28 @@ var UIController = (function() {
             }
             strint = intArray.join("");
             return strint + '.' + numSplit[1];
+        },
+        displayMonth: function() {
+            var now, months, month, year;
+            now = new Date();
+            months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            month = months[now.getMonth()];
+            year = now.getFullYear();
+            document.querySelector(DOMstrings.dateLabel).textContent = month + " " + year;
+        },
+        changedType: function() {
+            var fields = document.querySelectorAll(DOMstrings.inputType + "," + DOMstrings.inputDescription + "," + DOMstrings.inputValue);
+            fields.forEach(function(cur) {
+                cur.classList.toggle("red-focus");
+            });
+            document.querySelector(DOMstrings.inputBtn).classList.toggle("red");
         }
     }
 })();
 
 var controller = (function(budgetCtrl, UICtrl) {
 
-    function updateBudget(value) {
+    function updateBudget() {
         // 1. Calculate the budget
         budgetCtrl.calculateBudget();
 
@@ -209,6 +231,9 @@ var controller = (function(budgetCtrl, UICtrl) {
            
         // 3. Display the budget on the UI
         UICtrl.displayBudget(budget);
+
+        // 4. store allItems to localstorage
+        localStorage.setItem("allItems", JSON.stringify(budgetCtrl.getAllItems()));
     }
 
     function ctrlAddItem() {
@@ -237,7 +262,7 @@ var controller = (function(budgetCtrl, UICtrl) {
         target = event.target;
         element = target.parentNode.parentNode.parentNode.parentNode;
         typeAndId = target.parentNode.parentNode.parentNode.parentNode.id.split("-");
-        console.log(typeAndId);
+
 
         // 2. remove item from budget controller
         budgetCtrl.removeItem(typeAndId);
@@ -262,7 +287,39 @@ var controller = (function(budgetCtrl, UICtrl) {
 
         //delete income of expense event
         document.querySelector(DOMstrings.container).addEventListener('click', ctrlDeleteItem);
-    };
+
+        document.querySelector(DOMstrings.inputType).addEventListener("change", UICtrl.changedType);
+    }
+
+    function addItems(items, type) {
+        items.forEach(function(cur) {
+            UICtrl.addListItem(cur, type);
+        });
+    }
+
+    function showStoredItems(budget) {
+        var allItems, haveData = false;
+        // get stored data and show the UI
+        allItems = localStorage.getItem("allItems");
+        if (allItems) {
+            allItems = JSON.parse(allItems);
+            budgetCtrl.setAllItems(allItems);
+            if (allItems.inc && allItems.inc.length > 0) {
+                haveData = true;
+                addItems(allItems.inc, "inc");
+            }
+            if (allItems.exp && allItems.exp.length > 0) {
+                haveData = true;
+                addItems(allItems.exp, "exp");
+            }
+        } 
+        // if don't have any stored data, show default budget
+        if (!haveData) {
+            UICtrl.displayBudget(budget);
+        } else {
+            updateBudget();
+        }
+    }
 
     return {
         init: function() {
@@ -272,7 +329,8 @@ var controller = (function(budgetCtrl, UICtrl) {
                 budget: 0,
                 percentage: -1
             }
-            updateBudget(budget);
+            UICtrl.displayMonth();
+            showStoredItems(budget);
             setupEventListeners();
         }
     }
